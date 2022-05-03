@@ -1,17 +1,11 @@
-from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from rest_framework import permissions
 
-from sso.api.serializers import UserSerializer, GroupSerializer
+from sso.api.serializers import UserSerializer
+from sso.models import User
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
     permission_classes = [permissions.AllowAny]

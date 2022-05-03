@@ -13,7 +13,7 @@ class TimestampMixin(models.Model):
 
 class Category(TimestampMixin):
     name = models.CharField(max_length=200)
-    icon = models.ImageField(upload_to='category/', null=True, blank=True)
+    icon = models.ImageField(upload_to='images/category/', null=True, blank=True)
     description = models.TextField(blank=True)
 
     class Meta:

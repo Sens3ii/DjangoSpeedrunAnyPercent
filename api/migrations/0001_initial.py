@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Время создания')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Время последнего изменения')),
-                ('image', models.ImageField(null=True, upload_to='products/', validators=[api.utils.validate_size, api.utils.validate_extension], verbose_name='Картинка')),
+                ('image', models.ImageField(null=True, upload_to='images/products/', validators=[api.utils.validate_size, api.utils.validate_extension], verbose_name='Картинка')),
                 ('item', models.ForeignKey(null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='images', to='api.item')),
             ],
             options={

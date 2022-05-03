@@ -4,8 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.api.serializers import CategoryBaseSerializer
-from api.models import Category
+from api.api.serializers import CategoryBaseSerializer, ItemBaseSerializer, ItemListResponseSerializer, \
+    ItemRetrieveResponseSerializer
+from api.models import Category, Item
 
 
 class CategoryViewSet(
@@ -36,3 +37,22 @@ class CategorySearchView(
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response([], status=status.HTTP_200_OK)
+
+
+class ItemViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin
+):
+    queryset = Item.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return ItemListResponseSerializer
+        if self.action == 'retrieve':
+            return ItemRetrieveResponseSerializer
+        return ItemBaseSerializer

@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 
 from sso.models import User
@@ -5,8 +7,6 @@ from sso.models import User
 
 class UserBaseSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
-        max_length=128,
-        min_length=8,
         write_only=True
     )
 
@@ -18,3 +18,11 @@ class UserBaseSerializer(serializers.ModelSerializer):
 class UserSignUpSerializer(UserBaseSerializer):
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+    def validate_password(self, value):
+        reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!#%*?&]{8,120}$"
+        pat = re.compile(reg)
+        mat = re.search(pat, value)
+        if not mat:
+            raise serializers.ValidationError("Ernur pussy eater")
+        return value

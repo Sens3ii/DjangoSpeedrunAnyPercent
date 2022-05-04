@@ -1,6 +1,6 @@
 from django.db import models
 
-from api.utils import validate_size, validate_extension
+from utils.validators import validate_size, validate_extension
 
 
 class TimestampMixin(models.Model):
@@ -13,7 +13,13 @@ class TimestampMixin(models.Model):
 
 class Category(TimestampMixin):
     name = models.CharField(max_length=200)
-    icon = models.ImageField(upload_to='images/category/', null=True, blank=True)
+    icon = models.ImageField(
+        upload_to='images/category/',
+        null=True,
+        blank=True,
+        validators=[validate_size, validate_extension],
+
+    )
     description = models.TextField(blank=True)
 
     class Meta:
@@ -51,9 +57,13 @@ class Image(TimestampMixin):
                              on_delete=models.DO_NOTHING,
                              null=True,
                              related_name='images')
+    name = models.CharField(max_length=64,
+                            null=True,
+                            blank=True)
     image = models.ImageField(
-        upload_to='products/',
+        upload_to='images/products/',
         validators=[validate_size, validate_extension],
+        blank=True,
         null=True,
         verbose_name='Картинка'
     )

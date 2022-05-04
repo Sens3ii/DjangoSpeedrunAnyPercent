@@ -9,7 +9,7 @@ app_name = 'sso'
 router = routers.DefaultRouter()
 
 urlpatterns = [
-    path(r'users/', RegistrationAPIView.as_view()),
+    path(r'sign-up/', RegistrationAPIView.as_view()),
     path(r'profile/my', my_profile),
     path(r'login/', obtain_jwt_token),
     path(r'token-refresh/', refresh_jwt_token)

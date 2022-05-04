@@ -1,7 +1,8 @@
 from django.core import serializers
 from rest_framework import serializers
 
-from api.models import Category, Item
+from api.models import Category, Item, Image
+from utils.validators import validate_extension
 
 
 class CategoryBaseSerializer(serializers.ModelSerializer):
@@ -22,6 +23,12 @@ class CategoryNestedSerializer(CategoryNestedBaseSerializer):
     description = serializers.CharField()
 
 
+class ImageNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = ('image',)
+
+
 class ItemBaseSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(read_only=True)
@@ -33,6 +40,7 @@ class ItemBaseSerializer(serializers.Serializer):
     rating = serializers.FloatField(read_only=True)
     rating_count = serializers.IntegerField(read_only=True)
     category_id = serializers.IntegerField()
+    images = ImageNestedSerializer(many=True, read_only=True)
 
     def validate_category_id(self, value):
         if value and not Category.objects.filter(id=value).exists():
@@ -45,7 +53,15 @@ class ItemBaseSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        return Item.objects.create(**validated_data)
+        images = self.context.get('view').request.FILES
+        item = Item.objects.create(**validated_data)
+        for image in images.values():
+            try:
+                validate_extension(image)
+            except:
+                raise serializers.ValidationError("Not allowed extension")
+            Image.objects.create(item=item, image=image)
+        return item
 
     def update(self, instance, validated_data):
         instance.price = validated_data.get('price', instance.price)

@@ -5,6 +5,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from utils.validators import validate_extension, validate_size
 from .managers import UserManager
 
 
@@ -14,7 +15,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
     is_active = models.BooleanField(_('active'), default=True)
-    avatar = models.ImageField(upload_to='images/user/', null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to='images/user/',
+        null=True,
+        blank=True,
+        validators=[validate_size, validate_extension],
+    )
     date_of_birth = models.DateField()
 
     objects = UserManager()

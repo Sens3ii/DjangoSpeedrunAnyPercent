@@ -1,8 +1,5 @@
-import traceback
-
+from django.core import serializers
 from rest_framework import serializers
-from rest_framework.serializers import raise_errors_on_nested_writes
-from rest_framework.utils import model_meta
 
 from api.models import Category, Item
 
@@ -15,12 +12,14 @@ class CategoryBaseSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'icon', 'description', 'created_at', 'updated_at']
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    category_id = serializers.IntegerField()
+class CategoryNestedBaseSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
 
-    class Meta:
-        model = Category
-        fields = ('id',)
+
+class CategoryNestedSerializer(CategoryNestedBaseSerializer):
+    icon = serializers.CharField()
+    description = serializers.CharField()
 
 
 class ItemBaseSerializer(serializers.Serializer):
@@ -28,12 +27,22 @@ class ItemBaseSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
     price = serializers.FloatField()
-    name = serializers.CharField()
-    short_description = serializers.CharField()
-    full_description = serializers.CharField()
+    name = serializers.CharField(max_length=64)
+    short_description = serializers.CharField(max_length=128)
+    full_description = serializers.CharField(max_length=512)
     rating = serializers.FloatField(read_only=True)
     rating_count = serializers.IntegerField(read_only=True)
     category_id = serializers.IntegerField()
+
+    def validate_category_id(self, value):
+        if value and not Category.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Such category does not exists")
+        return value
+
+    def validate_price(self, value):
+        if value and value <= 0:
+            raise serializers.ValidationError("Price should be above zero")
+        return value
 
     def create(self, validated_data):
         return Item.objects.create(**validated_data)
@@ -43,14 +52,16 @@ class ItemBaseSerializer(serializers.Serializer):
         instance.name = validated_data.get('name', instance.name)
         instance.short_description = validated_data.get('short_description', instance.short_description)
         instance.full_description = validated_data.get('full_description', instance.full_description)
+        instance.category_id = validated_data.get('category_id', instance.category_id)
+        instance.save()
         return instance
 
 
 class ItemRetrieveResponseSerializer(ItemBaseSerializer):
     images = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-    category = serializers.StringRelatedField()
+    category = CategoryNestedSerializer()
 
 
 class ItemListResponseSerializer(ItemBaseSerializer):
     images = serializers.StringRelatedField(many=True, read_only=True)
-    category = serializers.StringRelatedField()
+    category = CategoryNestedBaseSerializer()

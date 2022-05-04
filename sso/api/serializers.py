@@ -24,5 +24,5 @@ class UserSignUpSerializer(UserBaseSerializer):
         pat = re.compile(reg)
         mat = re.search(pat, value)
         if not mat:
-            raise serializers.ValidationError("Ernur pussy eater")
+            raise serializers.ValidationError("Weak password")
         return value

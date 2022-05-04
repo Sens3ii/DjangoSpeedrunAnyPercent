@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models import Avg
 
+from cms import settings
 from utils.validators import validate_size, validate_extension
 
 
@@ -51,6 +53,16 @@ class Item(TimestampMixin):
     def __str__(self):
         return f'{self.id}: {self.name} | {self.price}'
 
+    def recalculate_rating(self):
+        ratings = self.reviews
+        print('rating saved')
+        value = 0
+        if ratings.exists():
+            value = ratings.aggregate(avg=Avg('rating'))['avg']
+        self.rating_count = ratings.count()
+        self.rating = value
+        self.save()
+
 
 class Image(TimestampMixin):
     item = models.ForeignKey(Item,
@@ -73,4 +85,26 @@ class Image(TimestampMixin):
         verbose_name_plural = 'Images'
 
     def __str__(self):
-        return f'{self.id}'
+        return f'image {self.id}'
+
+
+class Review(TimestampMixin):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,
+        related_name='reviews'
+    )
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.DO_NOTHING,
+        related_name='reviews'
+    )
+    content = models.TextField()
+    rating = models.IntegerField(default=0)
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return f'review {self.id}'

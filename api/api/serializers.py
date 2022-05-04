@@ -1,7 +1,8 @@
 from django.core import serializers
 from rest_framework import serializers
 
-from api.models import Category, Item, Image
+from api.models import Category, Item, Image, Review
+from sso.models import User
 from utils.validators import validate_extension
 
 
@@ -81,3 +82,44 @@ class ItemRetrieveResponseSerializer(ItemBaseSerializer):
 class ItemListResponseSerializer(ItemBaseSerializer):
     images = serializers.StringRelatedField(many=True, read_only=True)
     category = CategoryNestedBaseSerializer()
+
+
+class CommentBaseSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    content = serializers.CharField()
+    item_id = serializers.IntegerField()
+    user_id = serializers.IntegerField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    rating = serializers.IntegerField()
+
+    def validate_item_id(self, value):
+        if value and not Item.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Such item does not exists")
+        return value
+
+    def validate_rating(self, value):
+        if value >= 0 and value <= 5:
+            return value
+        raise serializers.ValidationError("Rating should be [0-5]")
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        if not user:
+            raise serializers.ValidationError("Not authentificated")
+        return Review.objects.create(user_id=user.id, **validated_data)
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data.get('content', instance.content)
+        instance.rating = validated_data.get('rating', instance.rating)
+        instance.save()
+        return instance
+
+
+class CommentGetSerializer(CommentBaseSerializer):
+    item = serializers.SlugRelatedField(read_only=True, slug_field='name')
+    user = serializers.SlugRelatedField(read_only=True, slug_field='email')
+
+
+class CommentUpdateSerializer(CommentBaseSerializer):
+    item_id = serializers.IntegerField(read_only=True)

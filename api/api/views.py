@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.api.serializers import CategoryBaseSerializer, ItemBaseSerializer, ItemListResponseSerializer, \
-    ItemRetrieveResponseSerializer
-from api.models import Category, Item
+    ItemRetrieveResponseSerializer, CommentBaseSerializer, CommentGetSerializer, CommentUpdateSerializer
+from api.models import Category, Item, Review
+from cms.permissions import IsOwnerOrReadOnly
 
 
 class CategoryViewSet(
@@ -56,3 +57,22 @@ class ItemViewSet(
         if self.action == 'retrieve':
             return ItemRetrieveResponseSerializer
         return ItemBaseSerializer
+
+
+class ReviewViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin
+):
+    queryset = Review.objects.all()
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return CommentGetSerializer
+        if self.action == 'update':
+            return CommentUpdateSerializer
+        return CommentBaseSerializer

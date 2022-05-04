@@ -24,11 +24,11 @@ class CategoryViewSet(
     permission_classes = [IsAuthenticated]
 
 
-class CategorySearchView(
+class ItemSearchView(
     APIView
 ):
-    queryset = Category.objects.all()
-    serializer_class = CategoryBaseSerializer
+    queryset = Item.objects.all()
+    serializer_class = ItemListResponseSerializer
     permission_classes = [IsAuthenticated]
 
     @action(methods=["GET"], detail=False)
@@ -39,6 +39,20 @@ class CategorySearchView(
             serializer = self.serializer_class(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response([], status=status.HTTP_200_OK)
+
+
+class CategoryItemsView(
+    APIView
+):
+    queryset = Item.objects.all()
+    serializer_class = ItemListResponseSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=["GET"], detail=False)
+    def get(self, request, pk, *args, **kwargs):
+        queryset = self.queryset.filter(category_id=pk)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ItemViewSet(
@@ -88,3 +102,17 @@ class OrderViewSet(
     queryset = Order.objects.all()
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = OrderBaseSerializer
+
+
+class OrderMyView(
+    APIView
+):
+    queryset = Order.objects.all()
+    serializer_class = OrderBaseSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=["GET"], detail=False)
+    def get(self, request, *args, **kwargs):
+        queryset = self.queryset.filter(user_id=self.request.user.id)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

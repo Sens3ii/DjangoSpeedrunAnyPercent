@@ -1,16 +1,10 @@
 from django.db import models
 from django.db.models import Avg
 
+from api.managers import IsAdultContentManagerMixin
+from api.mixins import TimestampMixin, IsAdultContentModelMixin, NotDeletableModelMixin
 from cms import settings
 from utils.validators import validate_size, validate_extension
-
-
-class TimestampMixin(models.Model):
-    class Meta:
-        abstract = True
-
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='Время последнего изменения')
 
 
 class Category(TimestampMixin):
@@ -32,7 +26,7 @@ class Category(TimestampMixin):
         return f'{self.id}: {self.name}'
 
 
-class Item(TimestampMixin):
+class Item(TimestampMixin, IsAdultContentModelMixin):
     name = models.CharField(max_length=200)
     price = models.FloatField(default=0.0)
     rating = models.FloatField(default=0.0)
@@ -45,6 +39,8 @@ class Item(TimestampMixin):
         null=True,
         related_name='items'
     )
+
+    objects = IsAdultContentManagerMixin()
 
     class Meta:
         verbose_name = 'Предмет'
@@ -108,3 +104,40 @@ class Review(TimestampMixin):
 
     def __str__(self):
         return f'review {self.id}'
+
+
+class Order(TimestampMixin, NotDeletableModelMixin):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,
+        related_name='orders'
+    )
+    total_price = models.FloatField(default=0.0)
+
+    class Meta:
+        verbose_name = 'Покупка'
+        verbose_name_plural = 'Покупка'
+
+    def __str__(self):
+        return f'review {self.id} | {self.total_price}'
+
+
+class OrderItem(NotDeletableModelMixin):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.DO_NOTHING,
+        related_name='order_items'
+    )
+    item = models.ForeignKey(
+        Item,
+        on_delete=models.DO_NOTHING,
+        related_name='order_items'
+    )
+    count = models.IntegerField(default=1)
+
+    class Meta:
+        verbose_name = 'Предмет покупки'
+        verbose_name_plural = 'Предметы покупки'
+
+    def __str__(self):
+        return f'review {self.id} | {self.item.name} | {self.count}'

@@ -1,7 +1,7 @@
 from django.core import serializers
 from rest_framework import serializers
 
-from api.models import Category, Item, Image, Review
+from api.models import Category, Item, Image, Review, OrderItem, Order
 from sso.models import User
 from utils.validators import validate_extension
 
@@ -42,6 +42,7 @@ class ItemBaseSerializer(serializers.Serializer):
     rating_count = serializers.IntegerField(read_only=True)
     category_id = serializers.IntegerField()
     images = ImageNestedSerializer(many=True, read_only=True)
+    is_adult_content = serializers.BooleanField(default=False)
 
     def validate_category_id(self, value):
         if value and not Category.objects.filter(id=value).exists():
@@ -123,3 +124,39 @@ class CommentGetSerializer(CommentBaseSerializer):
 
 class CommentUpdateSerializer(CommentBaseSerializer):
     item_id = serializers.IntegerField(read_only=True)
+
+
+class OrderItemNestedSerializer(serializers.Serializer):
+    item_id = serializers.IntegerField()
+    count = serializers.IntegerField()
+
+    def validate_item_id(self, value):
+        if value and not Item.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Such item does not exists")
+        return value
+
+
+class OrderBaseSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    user_id = serializers.IntegerField(read_only=True)
+    order_items = OrderItemNestedSerializer(many=True)
+    total_price = serializers.FloatField(read_only=True)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        if not user:
+            raise serializers.ValidationError("Not authentificated")
+
+        order_items = validated_data.pop('order_items')
+        order = Order.objects.create(user=user, **validated_data)
+
+        total_price = 0
+        for order_item in order_items:
+            item_obj = Item.objects.get(id=order_item['item_id'])
+            total_price += (item_obj.price * order_item['count'])
+            OrderItem.objects.create(**order_item, order=order)
+
+        order.total_price = total_price
+        order.save()
+
+        return order

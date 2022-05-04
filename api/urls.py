@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from api.api.views import CategoryViewSet, CategorySearchView, ItemViewSet, ReviewViewSet
+from api.api.views import CategoryViewSet, CategorySearchView, ItemViewSet, ReviewViewSet, OrderViewSet
 
 app_name = 'api'
 
@@ -65,6 +65,23 @@ urlpatterns = [
                 'delete': 'destroy'
             }),
         name="get/put reviews",
+    ),
+    path(
+        "orders/",
+        OrderViewSet.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }),
+        name="get/create orders",
+    ),
+    path(
+        "orders/<int:pk>/",
+        OrderViewSet.as_view(
+            {
+                "get": "retrieve",
+            }),
+        name="get orders",
     ),
 ]
 

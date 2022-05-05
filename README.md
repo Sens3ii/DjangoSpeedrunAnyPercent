@@ -11,3 +11,13 @@ The system can be integrated as a backend engine for mobile applications or web 
 The architecture is built on Scalable and Portable application. The engine can be used for various purposes, from a blog to a store.  
 
 
+## Setup
+```sh
+git clone https://github.com/Sens3ii/DjangoSpeedrunAnyPercent.git  
+python3 -m venv env  
+source env/bin/activate  
+
+pip install -r requirements.txt
+./manage.py runserver
+```
+Also you should create postgresql database and add credentials in .env  

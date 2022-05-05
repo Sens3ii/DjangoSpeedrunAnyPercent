@@ -1,9 +1,13 @@
+import logging
+
 from django.core import serializers
 from rest_framework import serializers
 
 from api.models import Category, Item, Image, Review, OrderItem, Order
 from sso.models import User
 from utils.validators import validate_extension
+
+logger = logging.getLogger(__name__)
 
 
 class CategoryBaseSerializer(serializers.ModelSerializer):

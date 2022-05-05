@@ -1,3 +1,5 @@
+import logging
+
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -7,6 +9,8 @@ from rest_framework.views import APIView
 
 from sso.api.serializers import UserSignUpSerializer, UserBaseSerializer
 from sso.models import User
+
+logger = logging.getLogger(__name__)
 
 
 class RegistrationAPIView(APIView):

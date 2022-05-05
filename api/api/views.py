@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import generics, mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +11,8 @@ from api.api.serializers import CategoryBaseSerializer, ItemBaseSerializer, Item
     OrderBaseSerializer
 from api.models import Category, Item, Review, Order
 from cms.permissions import IsOwnerOrReadOnly
+
+logger = logging.getLogger(__name__)
 
 
 class CategoryViewSet(

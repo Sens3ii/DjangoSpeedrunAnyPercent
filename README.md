@@ -21,3 +21,4 @@ pip install -r requirements.txt
 ./manage.py runserver
 ```
 Also you should create postgresql database and add credentials in .env  
+Made in 2 days :D

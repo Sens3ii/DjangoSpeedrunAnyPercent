@@ -92,8 +92,9 @@ class Review(TimestampMixin):
     )
     item = models.ForeignKey(
         Item,
-        on_delete=models.DO_NOTHING,
-        related_name='reviews'
+        on_delete=models.SET_NULL,
+        related_name='reviews',
+        null=True
     )
     content = models.TextField()
     rating = models.IntegerField(default=0)
@@ -130,8 +131,9 @@ class OrderItem(NotDeletableModelMixin):
     )
     item = models.ForeignKey(
         Item,
-        on_delete=models.DO_NOTHING,
-        related_name='order_items'
+        on_delete=models.SET_NULL,
+        related_name='order_items',
+        null=True
     )
     count = models.IntegerField(default=1)
 

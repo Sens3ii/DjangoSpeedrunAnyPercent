@@ -15,6 +15,6 @@ def rating_added(sender, instance, **kwargs):
 
 
 @receiver(post_delete, sender=Review)
-def rating_added(sender, instance, **kwargs):
+def rating_deleted(sender, instance, **kwargs):
     print("delete rating updated")
     instance.item.recalculate_rating()

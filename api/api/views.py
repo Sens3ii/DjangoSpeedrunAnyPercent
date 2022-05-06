@@ -59,6 +59,20 @@ class CategoryItemsView(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class ItemReviewsView(
+    APIView
+):
+    queryset = Review.objects.all()
+    serializer_class = CommentGetSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(methods=["GET"], detail=False)
+    def get(self, request, pk, *args, **kwargs):
+        queryset = self.queryset.filter(item_id=pk)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class ItemViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,

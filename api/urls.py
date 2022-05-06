@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from api.api.views import CategoryViewSet, ItemSearchView, ItemViewSet, ReviewViewSet, OrderViewSet, CategoryItemsView, \
-    OrderMyView
+    OrderMyView, ItemReviewsView
 
 app_name = 'api'
 
@@ -51,6 +51,11 @@ urlpatterns = [
                 "put": "update",
                 'delete': 'destroy'
             }),
+        name="get/put items",
+    ),
+    path(
+        "items/<int:pk>/reviews/",
+        ItemReviewsView.as_view(),
         name="get/put items",
     ),
     path(
